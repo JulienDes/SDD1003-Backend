@@ -64,19 +64,12 @@ async def get_autocomplete(query: str) -> Dict[str, Any]:
 
 
 @router.get("/estates/search")
-async def search_estates_by_name(name: str) -> Dict[str, Any]:
-    """Search estates by their `Name` field.
-
-    - `name`: the string to search for
-    - `exact`: when true, matches the whole Name exactly (case-insensitive);
-      when false, matches anywhere in the Name (case-insensitive).
-
-    Returns a JSON object with `items` (list of docs) and `total` (count).
-    """
+async def search_estates_by_name(address: str) -> Dict[str, Any]:
+    """Search estates by their `Name` field."""
     try:
         collection = db["new_york_updated"]
 
-        pattern = f"{re.escape(name)}"
+        pattern = f"{re.escape(address)}"
 
         filter_query = {"ADDRESS": {"$regex": pattern, "$options": "i"}}
 
@@ -139,5 +132,27 @@ async def update_estate(estate_id: str, estate: Estate) -> Dict[str, Any]:
 
         return {"item": updated, "updated_fields": list(update_data.keys())}
 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/estates/{estate_id}")
+async def get_estate_by_id(estate_id: str) -> Dict[str, Any]:
+    """Fetch a single estate document by its Mongo _id."""
+    try:
+        if not ObjectId.is_valid(estate_id):
+            raise HTTPException(status_code=400, detail="Invalid estate_id")
+
+        object_id = ObjectId(estate_id)
+        collection = db["new_york_updated"]
+
+        doc = await collection.find_one({"_id": object_id})
+        if not doc:
+            raise HTTPException(status_code=404, detail="Estate not found")
+
+        doc["_id"] = str(doc["_id"])
+        return {"item": doc}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
