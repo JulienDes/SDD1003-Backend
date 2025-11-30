@@ -8,15 +8,16 @@ class Estate(BaseModel):
 
     id: Optional[str] = Field(None, alias="_id")
     TYPE: Optional[str] = None
-    BEDS: Optional[int] = None
-    BATH: Optional[int] = None
-    PROPERTYSQFT: Optional[int] = None
+    BEDS: Optional[float] = None
+    BATH: Optional[float] = None
+    PROPERTYSQFT: Optional[float] = None
     ADDRESS: Optional[str] = None
     STATE: Optional[str] = None
     discounted_price: Optional[int] = None
     actual_price: Optional[int] = None
     url_exterior: Optional[str] = None
     url_interior: Optional[str] = None
+    description: Optional[str] = None
 
     class Config:
         populate_by_name = True
@@ -33,5 +34,13 @@ class Estate(BaseModel):
                 "actual_price": 199000,
                 "url_exterior": "https://example.com/exterior.jpg",
                 "url_interior": "https://example.com/interior.jpg",
+                "description": "The estate at 9430 Ridge Blvd Apt 6D is a co-op with 3 beds, 1 bath, and 325 sqft.",
             }
         }
+
+
+class SearchFilters(BaseModel):
+    beds: Optional[float] = None
+    baths: Optional[float] = None
+    sqft: Optional[float] = None
+    max_price: Optional[int] = None
