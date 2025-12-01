@@ -3,12 +3,12 @@ from typing import Any, Dict, List
 from fastapi import APIRouter, HTTPException
 from pymongo import UpdateOne
 
-from app.database import db
-from app.models import Estate
-from app.embeddings.description import build_estate_description
-from app.embeddings.embedder import process_batch
+from app.db.database import db
+from app.schemas.models import Estate
+from app.services.embeddings.description import build_estate_description
+from app.services.embeddings.embedder import process_batch
 
-router_batch = APIRouter()
+router_batch = APIRouter(tags=["Batchs operations"])
 
 
 @router_batch.post("/estates/updateBatchEmbeddings")

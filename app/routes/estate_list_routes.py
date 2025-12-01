@@ -1,10 +1,10 @@
 import re
 from typing import Any, Dict, List
 from fastapi import APIRouter, HTTPException, Query
-from app.database import db
-from app.embeddings.embedder import get_embedding, parse_query_llm
+from app.db.database import db
+from app.services.embeddings.embedder import get_embedding, parse_query_llm
 
-router_list = APIRouter()
+router_list = APIRouter(tags=["Listing operations"])
 
 # Common projection used across listing and search endpoints
 # to keep responses lightweight and consistent.
