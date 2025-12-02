@@ -1,11 +1,12 @@
 from typing import Any, Dict
 from fastapi import APIRouter, HTTPException
-from app.database import db
+from app.db.database import db
 from bson import ObjectId
-from app.models import Estate
-from app.embeddings.description import build_estate_description
+from app.schemas.models import Estate
+from app.services.embeddings.description import build_estate_description
+from app.services.embeddings.embedder import get_embedding
 
-router_crud = APIRouter()
+router_crud = APIRouter(tags=["CRUD operations"])
 
 
 @router_crud.delete("/estates/{estate_id}")
@@ -89,6 +90,9 @@ async def update_estate(estate_id: str, estate: Estate) -> Dict[str, Any]:
         # always works with updated and consistent text.
         update_data["description"] = build_estate_description(merged_estate)
 
+        # Refresh the embedding so semantic search remains accurate after edits.
+        update_data["embedding"] = await get_embedding(update_data["description"])
+
         # Apply the update atomically, ensuring only the intended fields change.
         result = await collection.update_one({"_id": object_id}, {"$set": update_data})
 
@@ -149,6 +153,9 @@ async def create_estate(estate: Estate) -> Dict[str, Any]:
         # Build a synthetic description up front
         # so all downstream embedding operations have consistent input.
         estate_data["description"] = build_estate_description(estate)
+
+        # Create embedding for the freshly generated description to support search.
+        estate_data["embedding"] = await get_embedding(estate_data["description"])
 
         # Insert the new entity and retrieve it to confirm the final stored state.
         result = await collection.insert_one(estate_data)

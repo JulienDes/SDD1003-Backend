@@ -5,7 +5,7 @@ from typing import List
 from openai import AsyncOpenAI
 from pymongo import UpdateOne
 from dotenv import load_dotenv
-from app.models import SearchFilters
+from app.schemas.models import SearchFilters
 
 load_dotenv()
 
@@ -16,22 +16,24 @@ client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 async def process_batch(docs_batch, collection):
     """Generate embeddings for a batch of documents and bulk update MongoDB."""
 
-    # Collects document descriptions to prepare a batch embedding request.
+    # Extracts the text descriptions that will be encoded, ensuring a 1:1 mapping
+    # between input documents and returned embeddings.
     descriptions = [doc.get("description", "") or "" for doc in docs_batch]
 
-    # Requests vector embeddings for all descriptions in a single API call to reduce overhead.
+    # Sends all descriptions in one request to reduce API latency and total cost.
     response = await client.embeddings.create(
         model="text-embedding-3-small",
         input=descriptions,
     )
 
-    # Préparer les opérations Mongo
     ops: List[UpdateOne] = []
 
-    # Builds a list of MongoDB update operations to attach the generated embeddings to each doc.
+    # Builds bulk update operations so MongoDB is updated efficiently rather than
+    # performing one write per document.
     for doc, emb in zip(docs_batch, response.data):
 
-        # Associates each embedding with the corresponding MongoDB document.
+        # Attaches the generated embedding to the corresponding Mongo document,
+        # enabling vector search or similarity ranking later.
         ops.append(
             UpdateOne(
                 {"_id": doc["_id"]},
@@ -39,7 +41,7 @@ async def process_batch(docs_batch, collection):
             )
         )
 
-    # Executes all update operations at once to improve performance and reduce network calls.
+    # Executes all updates in a single database round-trip to improve throughput.
     result = await collection.bulk_write(ops, ordered=False)
     return result.modified_count
 

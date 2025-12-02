@@ -1,4 +1,4 @@
-from app.models import Estate
+from app.schemas.models import Estate
 
 
 def build_estate_description(estate: Estate) -> str:

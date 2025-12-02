@@ -1,5 +1,5 @@
 from typing import Optional
-
+from enum import Enum
 from pydantic import BaseModel, Field
 
 
@@ -44,3 +44,17 @@ class SearchFilters(BaseModel):
     baths: Optional[float] = None
     sqft: Optional[float] = None
     max_price: Optional[int] = None
+
+
+class PredictRequest(BaseModel):
+    type: str
+    beds: int
+    bath: int
+    propertysqft: float
+    state: str
+
+
+class ModelName(str, Enum):
+    linear_regression = "linear-regression"
+    random_forest = "random-forest"
+    knn = "knn"
