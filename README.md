@@ -20,16 +20,14 @@
 
 3. Install dependencies inside the virtual environment:
    ```bash
-  pip install fastapi uvicorn pymongo python-dotenv
+  pip install requirements.txt
    ```
-
-### Folder Structure
-- `main.py`: Entry point of the application.
-- `app/`
-  - `__init__.py`: Marks the folder as a Python package.
-  - `database.py`: MongoDB connection logic.
-  - `routes.py`: API routes.
-
+### Create a .env file
+Create a .env file in the folder root, and add your mongoDB URI and OpenAI API key
+  ```
+  MONGODB_URI = 
+  OPENAI_API_KEY = 
+  ```
 ### Run the Backend
 
 To start the FastAPI backend server, run the following command in your console (from the backend folder):
